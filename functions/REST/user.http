@@ -1,0 +1,32 @@
+GET http://localhost:5000/twitter-clone-53ba9/us-central1/api/home 
+###
+POST http://localhost:5000/twitter-clone-53ba9/us-central1/api/signup
+content-type: application/json
+
+{
+    "email": "2ndUser@email.com",
+    "password": "123456",
+    "confirmPassword" : "123456",
+    "userName": "SecondUser",
+    "displayName": "2nd user",
+    "avatar": ""
+} 
+###
+POST http://localhost:5000/twitter-clone-53ba9/us-central1/api/login
+Content-Type: application/json
+
+{
+    "email": "2ndUser@email.com",
+    "password": "123456"
+}
+###
+POST http://localhost:5000/twitter-clone-53ba9/us-central1/api/image
+Content-Disposition: form-data; name="image"; filename="test.jpeg"  
+Content-Type: application/json
+< /home/swaggie/Downloads/test.jpeg
+###
+POST http://localhost:5000/twitter-clone-53ba9/asia-east2/api/test
+###
+GET http://localhost:5000/twitter-clone-53ba9/asia-east2/api/post/JPOFZjiZ5cnAXr4dzocJ
+###
+POST http://localhost:5000/twitter-clone-53ba9/asia-east2/api/post/JPOFZjiZ5cnAXr4dzocJ/like    
