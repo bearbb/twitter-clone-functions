@@ -158,3 +158,54 @@ exports.likePost = (req, res) => {
         .json({ error: "Something went wrong pls try again" });
     });
 };
+exports.unlike = (req, res) => {
+  //Post document
+  let postDoc = db.doc(`/posts/${req.params.postId}`);
+  //assign post data
+  let postData = {};
+  //Like document
+  let likeDoc = db
+    .collection("likes")
+    .where("userName", "==", req.user.userName)
+    .where("postId", "==", req.params.postId)
+    .limit(1);
+  postDoc
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        postData = doc.data();
+        return likeDoc.get();
+        //Check if there is like doc then del that doc
+      } else {
+        return res.status(400).json({
+          post: "Tweet not exist",
+        });
+      }
+    })
+    .then((doc) => {
+      if (doc.exists) {
+        let likeId = doc.docs[0].id;
+        console.log(likeId);
+        return db.doc(`/likes/${likeId}`).delete();
+      } else {
+        return res.status(400).json({
+          like: "Like it first!",
+        });
+      }
+    })
+
+    //Update post data by change likeCount -1
+    .then(() => {
+      postData.likeCount -= 1;
+      return postDoc.update({ likeCount: postData.likeCount });
+    })
+    .then(() => {
+      return res.json(postData);
+    })
+    .catch((error) => {
+      console.error(error);
+      return res
+        .status(400)
+        .json({ error: "Something went wrong pls try again" });
+    });
+};
