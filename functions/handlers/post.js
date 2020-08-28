@@ -1,5 +1,5 @@
 const { db, admin } = require("../utils/admin");
-
+const { validateTweet } = require("../utils/validators");
 exports.getAllPosts = (req, res) => {
   let postData = [];
   db.collection("posts")
@@ -83,12 +83,12 @@ exports.uploadImage = (req, res) => {
 exports.tweet = (req, res) => {
   const tweetData = {
     text: req.body.text,
-    image: req.body.imgURL,
+    image: req.body.image,
     createAt: new Date().toISOString(),
     avatar: req.user.avatar,
     userName: req.user.userName,
-    displayName: req.user.userName,
-    verified: req.user.verified,
+    displayName: req.user.displayName,
+    verified: false,
     likeCount: 0,
     tweetCount: 0,
     retweetCount: 0,
@@ -111,6 +111,37 @@ exports.tweet = (req, res) => {
       });
   }
 };
+exports.delTweet = (req, res) => {
+  let postId = req.params.postId;
+  let likeDoc;
+  db.doc(`/posts/${postId}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        if (doc.data().userName === req.user.userName) {
+          return db.doc(`/posts/${doc.id}`).delete();
+        } else {
+          return res.status(401).json({ authorization: "Unauthorized" });
+        }
+      } else {
+        return res.status(400).json({ tweet: "Doesn't exist" });
+      }
+    })
+    .then(() => {
+      return db.collection("likes").where("postId", "==", postId).get();
+    })
+    .then((doc) => {
+      doc.forEach((like) => {
+        db.doc(`/likes/${like.id}`).delete();
+      });
+      return res.json({ tweet: "Delete successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.json({ error: "Something went wrong pls try again" });
+    });
+};
+
 exports.likePost = (req, res) => {
   //assign req data to a object
   let likeData = {
@@ -138,15 +169,14 @@ exports.likePost = (req, res) => {
       }
     })
     .then((doc) => {
-      if (doc.exists) {
+      if (doc.docs[0]) {
         return res.status(400).json({ like: "Already like this post" });
       } else {
-        postData.likeCount++;
-        return postDoc.update({ likeCount: postData.likeCount });
+        postData.likeCount += 1;
+        return postDoc.update({ likeCount: postData.likeCount }).then(() => {
+          return db.collection("likes").add(likeData);
+        });
       }
-    })
-    .then(() => {
-      return db.collection("likes").add(likeData);
     })
     .then(() => {
       return res.json(postData);
@@ -183,10 +213,19 @@ exports.unlike = (req, res) => {
       }
     })
     .then((doc) => {
-      if (doc.exists) {
+      if (doc.docs[0]) {
         let likeId = doc.docs[0].id;
         console.log(likeId);
-        return db.doc(`/likes/${likeId}`).delete();
+        return (
+          db
+            .doc(`/likes/${likeId}`)
+            .delete()
+            //Update post data by change likeCount -1
+            .then(() => {
+              postData.likeCount -= 1;
+              return postDoc.update({ likeCount: postData.likeCount });
+            })
+        );
       } else {
         return res.status(400).json({
           like: "Like it first!",
@@ -194,11 +233,6 @@ exports.unlike = (req, res) => {
       }
     })
 
-    //Update post data by change likeCount -1
-    .then(() => {
-      postData.likeCount -= 1;
-      return postDoc.update({ likeCount: postData.likeCount });
-    })
     .then(() => {
       return res.json(postData);
     })

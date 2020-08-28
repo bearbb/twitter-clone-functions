@@ -9,6 +9,7 @@ const {
   getPost,
   uploadImage,
   tweet,
+  delTweet,
   getAllPosts,
   likePost,
   unlike,
@@ -21,6 +22,7 @@ app.get("/post/:postId", getPost);
 //INTERACT TO POST
 app.post("/post/:postId/like", twtAuth, likePost);
 app.post("/post/:postId/unlike", twtAuth, unlike);
+app.delete("/post/:postId", twtAuth, delTweet);
 
 //RELATIVE TO USER
 app.post("/signup", signup);
