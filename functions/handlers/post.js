@@ -113,7 +113,6 @@ exports.tweet = (req, res) => {
 };
 exports.delTweet = (req, res) => {
   let postId = req.params.postId;
-  let likeDoc;
   db.doc(`/posts/${postId}`)
     .get()
     .then((doc) => {
@@ -238,6 +237,81 @@ exports.unlike = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
+      return res
+        .status(400)
+        .json({ error: "Something went wrong pls try again" });
+    });
+};
+exports.reply = (req, res) => {
+  let postId = req.params.postId;
+  let tweetCount;
+  let replyData = {
+    content: req.body.content,
+    createAt: new Date().toISOString(),
+    displayName: req.user.displayName,
+    image: req.body.image,
+    postId,
+    userName: req.user.userName,
+  };
+  //check if post exist
+  db.doc(`/posts/${postId}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        tweetCount = doc.data().tweetCount;
+        tweetCount += 1;
+        return db.collection("replys").add(replyData);
+      } else {
+        return res.status(400).json({ tweet: "Not Found" });
+      }
+    })
+    .then(() => {
+      return db.doc(`/posts/${postId}`).update({ tweetCount });
+    })
+    .then(() => {
+      return res.json(replyData);
+    })
+    .catch((error) => {
+      console.error(error);
+      return res
+        .status(400)
+        .json({ error: "Something went wrong pls try again" });
+    });
+};
+exports.delReply = (req, res) => {
+  let postId = req.params.postId;
+  let replyId = req.params.replyId;
+  let tweetCount;
+  db.doc(`/posts/${postId}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        tweetCount = doc.data().tweetCount;
+        return db
+          .collection("replys")
+          .doc(replyId)
+          .get()
+          .then((repDoc) => {
+            if (repDoc.exists) {
+              if (repDoc.data().userName === req.user.userName) {
+                req.headers = {};
+                return db.doc(`/replys/${replyId}`).delete();
+              } else {
+                return res.status(401).json({ auth: "Unauthorized" });
+              }
+            } else {
+              return res.status(400).json({ reply: "Not found" });
+            }
+          });
+      } else {
+        return res.status(400).json({ tweet: "Not found" });
+      }
+    })
+    .then(() => {
+      return res.status(200).json({ reply: "Delete successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
       return res
         .status(400)
         .json({ error: "Something went wrong pls try again" });

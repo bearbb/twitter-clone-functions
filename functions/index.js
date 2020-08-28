@@ -13,16 +13,20 @@ const {
   getAllPosts,
   likePost,
   unlike,
+  reply,
+  delReply,
 } = require("./handlers/post");
 
 //RELATIVE TO POST
 app.get("/posts", getAllPosts);
 app.get("/post/:postId", getPost);
+app.delete("/post/:postId", twtAuth, delTweet);
 
 //INTERACT TO POST
 app.post("/post/:postId/like", twtAuth, likePost);
 app.post("/post/:postId/unlike", twtAuth, unlike);
-app.delete("/post/:postId", twtAuth, delTweet);
+app.post("/post/:postId/reply", twtAuth, reply);
+app.delete("/post/:postId/:replyId", twtAuth, delReply);
 
 //RELATIVE TO USER
 app.post("/signup", signup);
