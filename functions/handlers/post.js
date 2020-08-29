@@ -137,7 +137,6 @@ exports.delTweet = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      return res.json({ error: "Something went wrong pls try again" });
     });
 };
 
@@ -315,5 +314,84 @@ exports.delReply = (req, res) => {
       return res
         .status(400)
         .json({ error: "Something went wrong pls try again" });
+    });
+};
+exports.retweet = (req, res) => {
+  let postId = req.params.postId;
+  let retweetId, retweetCount;
+  let retweetData = {
+    content: req.body.content,
+    postId,
+  };
+  //check if that tweet exists
+  db.doc(`/posts/${postId}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        retweetCount = doc.data().retweetCount + 1;
+        return db
+          .collection("retweets")
+          .add(retweetData)
+          .then((retweetDoc) => {
+            retweetId = retweetDoc.id;
+            return db.doc(`/posts/${postId}`).update({ retweetCount });
+          });
+      } else {
+        return res.status(400).json({ tweet: "Not found" });
+      }
+    })
+    .then(() => {
+      return res.json({ retweet: "Successfully", retweetId });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res
+        .status(400)
+        .json({ error: "Something went wrong pls try again" });
+    });
+};
+exports.delRetweet = (req, res) => {
+  let retweetDoc = db.doc(`/retweets/${req.params.retweetId}`);
+  let postDoc;
+  let retweetCount,
+    retweetId = req.params.retweetId;
+  //check retweet existence
+  retweetDoc
+    .get()
+    .then((rtDoc) => {
+      if (rtDoc.exists) {
+        //check if that post exists
+        postDoc = db.doc(`/posts/${rtDoc.data().postId}`);
+        return postDoc.get().then((pDoc) => {
+          if (pDoc.exists) {
+            retweetCount = pDoc.data().retweetCount;
+            //check auth
+            if (pDoc.data().userName === req.user.userName) {
+              retweetCount -= 1;
+              return db
+                .doc(`/retweets/${retweetId}`)
+                .delete()
+                .then(() => {
+                  postDoc.update({ retweetCount });
+                });
+            } else {
+              return res.status(401).json({ auth: "Unauthorized" });
+            }
+          } else {
+            return res.status(400).json({ tweet: "Not found" });
+          }
+        });
+      } else {
+        return res.status(400).json({ retweet: "Not found" });
+      }
+    })
+    .then(() => {
+      return res.json({ retweet: "Delete successfully" });
+    })
+    .catch((error) => {
+      console.error(error);
+      return res
+        .status(404)
+        .json({ error: "Something went wrong, pls try agin" });
     });
 };

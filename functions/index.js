@@ -1,7 +1,6 @@
 const functions = require("firebase-functions");
 
 const app = require("express")();
-const { db } = require("./utils/admin");
 
 const { signup, login } = require("./handlers/user");
 const twtAuth = require("./utils/twtAuth");
@@ -15,6 +14,8 @@ const {
   unlike,
   reply,
   delReply,
+  retweet,
+  delRetweet,
 } = require("./handlers/post");
 
 //RELATIVE TO POST
@@ -27,6 +28,8 @@ app.post("/post/:postId/like", twtAuth, likePost);
 app.post("/post/:postId/unlike", twtAuth, unlike);
 app.post("/post/:postId/reply", twtAuth, reply);
 app.delete("/post/:postId/:replyId", twtAuth, delReply);
+app.post("/post/:postId/retweet", retweet);
+app.delete("/retweet/:retweetId", twtAuth, delRetweet);
 
 //RELATIVE TO USER
 app.post("/signup", signup);
