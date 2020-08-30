@@ -58,6 +58,27 @@ exports.validateSignupData = (signupData) => {
         displayName: "Your name can't be blank",
       },
     };
+  } else if (signupData.userName === "") {
+    return {
+      validate: false,
+      error: {
+        userName: "Username can't be blank",
+      },
+    };
+  } else if (signupData.password === "") {
+    return {
+      validate: false,
+      error: {
+        password: "Password can't be blank",
+      },
+    };
+  } else if (signupData.confirmPassword === "") {
+    return {
+      validate: false,
+      error: {
+        confirmPassword: "Password confirmation can't be blank",
+      },
+    };
   } else {
     return {
       validate: true,
