@@ -1,8 +1,15 @@
 const functions = require("firebase-functions");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const app = require("express")();
-app.use(cors());
-const { signup, login } = require("./handlers/user");
+app.use(
+  cors({
+    origin: "https://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(cookieParser());
+const { signup, login, logout, user } = require("./handlers/user");
 const twtAuth = require("./utils/twtAuth");
 const {
   getPost,
@@ -34,7 +41,8 @@ app.delete("/retweet/:retweetId", twtAuth, delRetweet);
 //RELATIVE TO USER
 app.post("/signup", signup);
 app.post("/login", login);
-
+app.post("/logout", logout);
+app.get("/user", twtAuth, user);
 //RELATIVE TO UPLOAD STUFF TO DATABASE
 app.post("/image", twtAuth, uploadImage);
 app.post("/tweet", twtAuth, tweet);

@@ -28,7 +28,7 @@ Content-Type: application/json
 POST http://localhost:5000/twitter-clone-53ba9/asia-east2/api/login
 
 {
-    "email": "2nduser@email.com",
+    "email": "bearbb@email.com",
     "password": "123456"
 }
 ###

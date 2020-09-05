@@ -4,14 +4,15 @@ const { db, admin } = require("./admin");
 
 module.exports = (req, res, next) => {
   let idToken;
+  //console.log(req.cookies);
   if (
-    req.headers.authorization &&
-    `${req.headers.authorization}`.startsWith("Bearer")
+    req.cookies.authorization &&
+    `${req.cookies.authorization}`.startsWith("Bearer")
   ) {
-    idToken = `${req.headers.authorization}`.split(" ")[1];
+    idToken = `${req.cookies.authorization}`.split(" ")[1];
   } else {
     console.error("NO TOKEN FOUND");
-    return res.status(403).json({ error: "unauthorized" });
+    return res.status(406).json({ error: "unauthorized" });
   }
   admin
     .auth()

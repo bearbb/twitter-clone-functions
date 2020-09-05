@@ -351,32 +351,22 @@ exports.retweet = (req, res) => {
     });
 };
 exports.delRetweet = (req, res) => {
-  let retweetDoc = db.doc(`/retweets/${req.params.retweetId}`);
-  let postDoc;
-  let retweetCount,
-    retweetId = req.params.retweetId;
+  let retweetDoc = db.doc(`/retweets/${retweetId}`);
+  let retweetCount;
+
   //check retweet existence
   retweetDoc
     .get()
     .then((rtDoc) => {
       if (rtDoc.exists) {
         //check if that post exists
-        postDoc = db.doc(`/posts/${rtDoc.data().postId}`);
+        let postDoc = db.doc(`/posts/${req.params.postId}`);
         return postDoc.get().then((pDoc) => {
           if (pDoc.exists) {
-            retweetCount = pDoc.data().retweetCount;
-            //check auth
-            if (pDoc.data().userName === req.user.userName) {
-              retweetCount -= 1;
-              return db
-                .doc(`/retweets/${retweetId}`)
-                .delete()
-                .then(() => {
-                  postDoc.update({ retweetCount });
-                });
-            } else {
-              return res.status(401).json({ auth: "Unauthorized" });
-            }
+            retweetCount = pDoc.data().retweetCount - 1;
+            return retweetDoc.delete().then(() => {
+              return postDoc.update({ retweetCount });
+            });
           } else {
             return res.status(400).json({ tweet: "Not found" });
           }
