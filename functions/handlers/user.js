@@ -10,6 +10,13 @@ const authCookieOptions = {
   domain: "asia-east2-twitter-clone-53ba9.cloudfunctions.net",
   path: "/",
 };
+const cookieOptionsToRemove = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  domain: "asia-east2-twitter-clone-53ba9.cloudfunctions.net",
+  path: "/",
+};
 const { db, admin } = require("../utils/admin");
 
 const firebase = require("firebase");
@@ -110,25 +117,12 @@ exports.login = (req, res) => {
         return res.status(200).json({ accessToken: token, refreshToken });
       })
       .catch((err) => {
-        if (err.code === "auth/user-not-found") {
-          return res.status(400).json({
-            error: {
-              email: "Wrong email, pls try again",
-            },
-          });
-        } else if (err.code === "auth/week-password") {
-          return res.status(400).json({
-            error: {
-              password: "Wrong password, pls try again",
-            },
-          });
-        } else {
-          return res.status(401).json({
-            error: {
-              error: "Something wrong, pls try again",
-            },
-          });
-        }
+        console.error(err);
+        return res.status(404).json({
+          error: {
+            credential: "Wrong credentials pls try again",
+          },
+        });
       });
   }
 };
@@ -138,14 +132,20 @@ exports.login = (req, res) => {
 exports.logout = async (req, res) => {
   //Check if there is token from req.cookies
   try {
-    if (req.cookies.authorization) {
+    if (
+      req.cookies.authorization &&
+      req.cookies.authorization.startsWith("Bearer")
+    ) {
       //delete the token
-      res.clearCookie("authorization", authCookieOptions);
+      console.log(req.cookies.authorization);
+      await res.clearCookie("authorization", cookieOptionsToRemove);
       return res.json({ auth: "Logout successfully" });
     } else {
+      console.log("No token found");
       return res.status(404).json({ auth: "You haven't logged in" });
     }
   } catch (err) {
+    console.error(err);
     return res.status(400).json({ err });
   }
 };
@@ -168,5 +168,19 @@ exports.user = async (req, res) => {
         user: "User not found",
       },
     });
+  }
+};
+
+// ---------------------SEPARATE------------------------
+
+exports.isLoggedIn = (req, res) => {
+  //check if there is cookie name with authorization and begin with Bearer
+  if (
+    req.cookies.authorization &&
+    req.cookies.authorization.startsWith("Bearer")
+  ) {
+    return res.json({ isLoggedIn: true });
+  } else {
+    return res.json({ isLoggedIn: false });
   }
 };

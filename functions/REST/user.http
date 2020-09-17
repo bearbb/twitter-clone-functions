@@ -20,22 +20,14 @@ Content-Type: application/json
     "password": "123456"
 }
 ###
-POST http://localhost:5000/twitter-clone-53ba9/us-central1/api/image
-Content-Disposition: form-data; name="image"; filename="test.jpeg"  
-Content-Type: application/json
-< /home/swaggie/Downloads/test.jpeg
-###
-POST http://localhost:5000/twitter-clone-53ba9/asia-east2/api/login
 
-{
-    "email": "bearbb@email.com",
-    "password": "123456"
-}
+GET  http://localhost:5000/twitter-clone-53ba9/asia-east2/api/posts
+
 ###
-GET http://localhost:5000/twitter-clone-53ba9/asia-east2/api/post/JPOFZjiZ5cnAXr4dzocJ
+GET http://localhost:5000/twitter-clone-53ba9/asia-east2/api/isLoggedIn
 ###
 POST http://localhost:5000/twitter-clone-53ba9/asia-east2/api/post/JPOFZjiZ5cnAXr4dzocJ/like    
 Authorization: Bearer
 
 ###
-POST 
+GET http://localhost:5000/twitter-clone-53ba9/us-central1/api/

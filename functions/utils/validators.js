@@ -16,7 +16,7 @@ exports.validateLoginData = (loginData) => {
     return {
       validate: false,
       error: {
-        confirmPassword: "Password can't be blank",
+        password: "Password can't be blank",
       },
     };
   } else {
